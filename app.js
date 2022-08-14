@@ -18,13 +18,28 @@ connectDB()
 
 const app = express()
 
+// Body parser
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
+
+
 // Logging
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
 }
 
+// Handlebars helpers
+const { formatDate, stripTags, truncate, editIcon, select } = require('./helpers/hbs')
+
 // Handlebars
 app.engine('.hbs', exphbs.engine({
+    helpers: {
+        formatDate,
+        stripTags,
+        truncate,
+        editIcon,
+        select,
+    },
     defaultLayout: 'main', 
     extname: '.hbs'
     })
@@ -47,6 +62,12 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 
+
+// sEt global variable
+app.use(function (req, res, next){
+    res.locals.user = req.user || null
+    next()
+})
 // Static folder
 app.use(express.static(path.join(__dirname, 'public')))
 
